@@ -11,14 +11,15 @@ package ratgo
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/go-touch/mtype"
 	"github.com/vdongchina/ratgo/config"
+	"github.com/vdongchina/ratgo/utils/types"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 )
 
+// ConfigStorage.
 type ConfigStorage struct {
 	AppName        string // Application name
 	AppVersion     string // Application version
@@ -35,12 +36,14 @@ type ConfigStorage struct {
 	HTTPSKeyFile   string
 	RecoverPanic   bool
 	RecoverFunc    func(c *gin.Context)
-	DefinedConfig  mtype.AnyMap
+	DefinedConfig  types.AnyMap
 	Error          error
 	Pattern        string // debug:list; release
 	StoreFormat    int    // 1:text; 2:json;
 	Storage        string // local; syslog; redis; es; mongo
 	ProjectName    string // 项目名称
+	InitDb         bool   // 是否初始化 gorm db
+	InitRedis      bool   // 是否初始化 redis
 }
 
 var (
@@ -64,11 +67,13 @@ func init() {
 		HTTPSAddr:      ":10443",
 		HTTPSCertFile:  "",
 		HTTPSKeyFile:   "",
-		DefinedConfig:  mtype.AnyMap{},
+		DefinedConfig:  types.AnyMap{},
 		Pattern:        "debug",
 		StoreFormat:    1,
 		Storage:        "local",
 		ProjectName:    "lianxilog",
+		InitDb:         true,
+		InitRedis:      true,
 	}
 }
 
@@ -119,7 +124,7 @@ func (cs *ConfigStorage) Init(outAnyMap ...map[string]interface{}) {
 	}
 
 	// App配置
-	appConfig := mtype.AnyMap(cs.Get("ratgo.main").ToAnyMap())
+	appConfig := types.AnyMap(cs.Get("ratgo.main").ToAnyMap())
 	if len(appConfig) > 0 {
 		delete(cs.DefinedConfig, "ratgo")
 	}
@@ -191,7 +196,7 @@ func (cs *ConfigStorage) MapMerge(dstMap map[string]interface{}, merged ...inter
 }
 
 // Get app config.
-func (cs *ConfigStorage) Get(args ...string) *mtype.AnyValue {
+func (cs *ConfigStorage) Get(args ...string) *types.AnyValue {
 	return cs.DefinedConfig.Get(args...)
 }
 

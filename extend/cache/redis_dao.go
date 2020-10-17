@@ -3,7 +3,7 @@ package cache
 import (
 	"errors"
 	"github.com/garyburd/redigo/redis"
-	"github.com/go-touch/mtype"
+	"github.com/vdongchina/ratgo/utils/types"
 )
 
 type Identify interface {
@@ -31,12 +31,12 @@ func (rd *RedisDao) Pool() *redis.Pool {
 }
 
 // 执行redis命令
-func (rd *RedisDao) Command(name string, args ...interface{}) *mtype.AnyValue {
+func (rd *RedisDao) Command(name string, args ...interface{}) *types.AnyValue {
 	redisConn := rd.Pool().Get()
 	defer func() { _ = redisConn.Close() }()
 	result, err := redisConn.Do(name, args...)
 	if err != nil {
-		return mtype.Eval(err)
+		return types.Eval(err)
 	}
-	return mtype.Eval(result)
+	return types.Eval(result)
 }

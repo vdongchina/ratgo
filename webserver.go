@@ -35,10 +35,25 @@ func NewWebServer() *WebServer {
 
 // 初始化
 func (ws *WebServer) Init() {
-	Config.Init()                                       // 配置初始化
-	extend.Gorm.Init(Config.Get("database").ToAnyMap()) // 初始化数据库
-	cache.Redis.Init(Config.Get("redis").ToAnyMap())    // 初始化redis
-	ws.gin.Use(LoggerInit())                            // 日志注入
+	Config.Init() // 配置初始化
+	// 初始化数据库
+	if Config.InitDb == true {
+		extend.Gorm.Init(Config.Get("database").ToAnyMap())
+	}
+	// 初始化redis
+	if Config.InitRedis == true {
+		cache.Redis.Init(Config.Get("redis").ToAnyMap())
+	}
+	ws.gin.Use(LoggerInit()) // 日志注入
+	// 执行用户挂载函数
+	if len(UserFuncArray) > 0 {
+		for _, function := range UserFuncArray {
+			err := function()
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+	}
 }
 
 // 运行server

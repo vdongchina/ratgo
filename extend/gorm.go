@@ -12,8 +12,8 @@ package extend
 import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-touch/mtype"
 	"github.com/jinzhu/gorm"
+	"github.com/vdongchina/ratgo/utils/types"
 	"sync"
 	"time"
 )
@@ -21,7 +21,7 @@ import (
 // *gorm.DB 存储容器
 type DbStorage struct {
 	lock   *sync.RWMutex
-	anyMap mtype.AnyMap
+	anyMap types.AnyMap
 	dbMap  map[string]*gorm.DB
 }
 
@@ -41,13 +41,13 @@ var Gorm *DbStorage
 func init() {
 	Gorm = &DbStorage{
 		lock:   new(sync.RWMutex),
-		anyMap: mtype.AnyMap{},
+		anyMap: types.AnyMap{},
 		dbMap:  map[string]*gorm.DB{},
 	}
 }
 
 // 配置初始化 - map形式
-func (ds *DbStorage) Init(config mtype.AnyMap) {
+func (ds *DbStorage) Init(config types.AnyMap) {
 	ds.anyMap = config
 }
 
@@ -76,8 +76,8 @@ func (ds *DbStorage) GetConfig(key string) map[string]DbConfig {
 	dc := map[string]DbConfig{key: {
 		DriverName:     configParam["driverName"],
 		DataSourceName: configParam["dataSourceName"],
-		MaxOpenConn:    mtype.Eval(configParam["maxIdleConn"]).ToInt(),
-		MaxIdleConn:    mtype.Eval(configParam["maxIdleConn"]).ToInt(),
+		MaxOpenConn:    types.Eval(configParam["maxIdleConn"]).ToInt(),
+		MaxIdleConn:    types.Eval(configParam["maxIdleConn"]).ToInt(),
 		MaxLifetime:    1800,
 		SingularTable:  configParam["SingularTable"],
 	}}

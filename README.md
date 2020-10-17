@@ -42,7 +42,7 @@
 	$ go get github.com/jinzhu/gorm
 	$ go get github.com/garyburd/redigo/redis
 	$ go get gopkg.in/ini.v1
-	$ go get github.com/go-touch/mtype
+	$ go get github.com/vdongchina/ratgo/utils/types
 #### 4. 设置系统环境变量
 	RATGO_RUNMODE = dev | test | prod
 #### 5. 如使用 go mod(自行查找使用方法) 包依赖管理工具，请参考下面命令
@@ -83,7 +83,7 @@
 	HTTPAddr = 127.0.0.1:8089 // http地址端口
 	HTTPSAddr = 127.0.0.1:10443 // https地址端口
 #### 项目中使用配置
-	读取方式： (不会直接获取对应值, 而是返回一个*mtype.anyvalue结构体指针, 可实现对应类型转换)
+	读取方式： (不会直接获取对应值, 而是返回一个*types.anyvalue结构体指针, 可实现对应类型转换)
 	config ：= ratgo.Config.Get("xx.xx")
 	
 	调用示例:

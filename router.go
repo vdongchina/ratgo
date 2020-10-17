@@ -112,8 +112,3 @@ func (rs *RouterStorage) SetHTMLGlob(pattern string) {
 func (rs *RouterStorage) GetHTMLGlob() []string {
 	return rs.htmlGlob
 }
-
-// 获取 html模板
-func (rs *RouterStorage) GetHTMLGlob2() []string {
-	return rs.htmlGlob
-}

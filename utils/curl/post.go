@@ -2,7 +2,7 @@ package curl
 
 import (
 	"bytes"
-	"github.com/go-touch/mtype"
+	"github.com/vdongchina/ratgo/utils/types"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -38,11 +38,11 @@ func (pc *PostCaller) GetHeader(key string) string {
 }
 
 // Send a post request.
-func (pc *PostCaller) Call(url string, args ...interface{}) *mtype.AnyValue {
+func (pc *PostCaller) Call(url string, args ...interface{}) *types.AnyValue {
 	// 创建request
 	request, err := http.NewRequest(pc.method, url, pc.IoReader(args...))
 	if err != nil {
-		return mtype.Eval(err)
+		return types.Eval(err)
 	}
 	if len(pc.header) > 0 {
 		for key, value := range pc.header {
@@ -55,17 +55,17 @@ func (pc *PostCaller) Call(url string, args ...interface{}) *mtype.AnyValue {
 	// 发送一个POST请求
 	resp, err2 := http.DefaultClient.Do(request)
 	if err2 != nil {
-		return mtype.Eval(err2)
+		return types.Eval(err2)
 	}
 	defer func() { _ = resp.Body.Close() }()
 	// 响应数据处理
 	respData, err4 := ioutil.ReadAll(resp.Body)
 	if err4 != nil {
-		return mtype.Eval(err4)
+		return types.Eval(err4)
 	} else {
 		respData = bytes.TrimPrefix(respData, []byte("\xef\xbb\xbf"))
 	}
-	return mtype.Eval(respData)
+	return types.Eval(respData)
 }
 
 // 获取 io.Reader.
@@ -82,7 +82,7 @@ func (pc *PostCaller) IoReader(args ...interface{}) io.Reader {
 		}
 		return strings.NewReader(v)
 	} else {
-		stringMap := mtype.Eval(args[0]).ToStringMap()
+		stringMap := types.Eval(args[0]).ToStringMap()
 		var param []string
 		for k, v := range stringMap {
 			param = append(param, k+"="+url.QueryEscape(v))

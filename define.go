@@ -9,6 +9,22 @@
 // limitations under the License.
 package ratgo
 
+/**************************************** 用户挂载函数 ****************************************/
+type UserFunc func() error
+
+// 初始化
+var UserFuncArray []UserFunc
+
+func init() {
+	UserFuncArray = []UserFunc{}
+}
+
+// 注册用户挂载函数
+func RegisterUserFunc(userFunc UserFunc) error {
+	UserFuncArray = append(UserFuncArray, userFunc)
+	return nil
+}
+
 /**************************************** 数据类型 - 结构体Result ****************************************/
 // 定义常量
 const (
@@ -60,7 +76,7 @@ func (r *Result) SetData(data interface{}) *Result {
 }
 
 // 抛出异常
-func (r *Result) ThrowException() *Result{
+func (r *Result) ThrowException() *Result {
 	r.SetStatus(900)
 	return r
 }
