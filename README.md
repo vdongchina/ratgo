@@ -34,7 +34,7 @@
 	$ set GOPRIVATE=gitlabj01.vdongchina.com
 ```
 #### 2. 使用下面命令进行安装 ratgo
-	$ go get gitlabj01.vdongchina.com/TemplateFramework/ratgo
+	$ go get github.com/vdongchina/ratgo
 #### 3. 依赖包安装(已安装可忽略)
 	$ go get github.com/gin-gonic/gin
 	$ go get github.com/unrolled/secure
@@ -99,7 +99,7 @@
 package main
 
 import (
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo"
+	"github.com/vdongchina/ratgo"
 	_ "myratgo/application/router"
 )
 
@@ -119,7 +119,7 @@ func main() {
 package router
 
 import (
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo"
+	"github.com/vdongchina/ratgo"
 	"myratgo/application/modules/demo"
 	"myratgo/application/modules/demo/sub"
 )
@@ -249,7 +249,7 @@ func (r *Result) SetData(data interface{}) {
 package demo
 
 import (
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo"
+	"github.com/vdongchina/ratgo"
 )
 
 type Index struct {

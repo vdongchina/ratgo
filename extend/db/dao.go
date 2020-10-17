@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/db/model"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/db/query"
+	"github.com/vdongchina/ratgo/extend/db/model"
+	"github.com/vdongchina/ratgo/extend/db/query"
 	"regexp"
 	"strings"
 )

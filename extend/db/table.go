@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/db/model"
+	"github.com/vdongchina/ratgo/extend/db/model"
 )
 
 // Table容器

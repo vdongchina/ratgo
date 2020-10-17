@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/db/query"
+	"github.com/vdongchina/ratgo/extend/db/query"
 	"strconv"
 )
 

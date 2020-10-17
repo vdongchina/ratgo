@@ -12,7 +12,7 @@ package ratgo
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-touch/mtype"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/config"
+	"github.com/vdongchina/ratgo/config"
 	"os"
 	"path/filepath"
 	"reflect"

@@ -12,8 +12,8 @@ package ratgo
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/cache"
+	"github.com/vdongchina/ratgo/extend"
+	"github.com/vdongchina/ratgo/extend/cache"
 	"net/http"
 	"reflect"
 )

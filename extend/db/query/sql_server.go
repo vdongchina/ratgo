@@ -2,7 +2,7 @@ package query
 
 import (
 	"database/sql"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/db/query/parts"
+	"github.com/vdongchina/ratgo/extend/db/query/parts"
 )
 
 type SqlServerQuery struct {

@@ -3,7 +3,7 @@ package query
 import (
 	"database/sql"
 	"fmt"
-	"gitlabj01.vdongchina.com/TemplateFramework/ratgo/extend/db/query/parts"
+	"github.com/vdongchina/ratgo/extend/db/query/parts"
 	"regexp"
 	"strings"
 )
