@@ -78,7 +78,7 @@ func (ds *DbStorage) GetConfig(key string) map[string]DbConfig {
 		DataSourceName: configParam["dataSourceName"],
 		MaxOpenConn:    types.Eval(configParam["maxIdleConn"]).ToInt(),
 		MaxIdleConn:    types.Eval(configParam["maxIdleConn"]).ToInt(),
-		MaxLifetime:    1800,
+		MaxLifetime:    time.Duration(types.Eval(configParam["maxLifetime"]).ToInt()) * time.Second,
 		SingularTable:  configParam["SingularTable"],
 	}}
 	return dc
