@@ -12,6 +12,7 @@ package ratgo
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/vdongchina/ratgo/ext"
 	"github.com/vdongchina/ratgo/extend"
 	"github.com/vdongchina/ratgo/extend/cache"
 	"net/http"
@@ -43,6 +44,7 @@ func (ws *WebServer) Init() {
 	// 初始化redis
 	if Config.InitRedis == true {
 		cache.Redis.Init(Config.Get("redis").ToAnyMap())
+		ext.Redis.Init(Config.Get("redis").ToAnyMap())
 	}
 	ws.gin.Use(LoggerInit()) // 日志注入
 	// 执行用户挂载函数
