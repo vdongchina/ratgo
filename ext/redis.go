@@ -61,6 +61,8 @@ func (rc *RedisCache) Pool(identify string) *redis.Pool {
 			panic(fmt.Sprintf("the config's '%s' can't be empty.", key))
 		}
 	}
+
+	// 整型参数校验
 	intMap := map[string]int{"Db": 0, "MaxIdle": 0, "MaxActive": 0, "IdleTimeout": 0}
 	for key := range intMap {
 		if value, ok := config[key]; ok {
@@ -69,6 +71,7 @@ func (rc *RedisCache) Pool(identify string) *redis.Pool {
 			}
 		}
 	}
+
 	// 创建连接池
 	rc.pool[identify] = &redis.Pool{
 		MaxIdle:     intMap["MaxIdle"],
@@ -81,7 +84,7 @@ func (rc *RedisCache) Pool(identify string) *redis.Pool {
 				redis.DialConnectTimeout(time.Duration(intMap["IdleTimeout"]) * time.Millisecond),
 				redis.DialDatabase(intMap["Db"]),
 			}
-			if stringMap["password"] != "" {
+			if stringMap["Password"] != "" {
 				dialOption = append(dialOption, redis.DialPassword(stringMap["Password"]))
 			}
 			return redis.Dial("tcp", stringMap["Host"], dialOption...)
