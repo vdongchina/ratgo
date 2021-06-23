@@ -12,6 +12,7 @@ package vdlog
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -148,17 +149,16 @@ func (ls *Logger) setIoWriter(logger *logrus.Logger, level string, date string) 
 
 // 创建文件 io.Writer
 func (ls *Logger) ioWriter(level string, date string) (osFile *os.File, err error) {
+	// 判断根目录是否存在
+	if _, ok := IsExists(ls.Config.RootPath); !ok {
+		return nil, errors.New(fmt.Sprintf("log path '%s' is not exists.", ls.Config.RootPath))
+	}
+
 	// 文件路径
 	paths := []string{date, level}
 	baseName := fmt.Sprintf("%s.%s", strings.Join(paths, "-"), ls.Config.Ext)
 	filename := path.Join(ls.Config.RootPath, baseName)
-
-	// 文件句柄
-	_, isFile := IsFile(filename)
-	if isFile {
-		return os.OpenFile(filename, os.O_APPEND, 0777) // 打开文件
-	}
-	return os.Create(filename) // 创建文件
+	return os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 }
 
 // 记录警告信息
