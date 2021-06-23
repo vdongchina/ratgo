@@ -61,14 +61,14 @@ func NewLogger(outConfig interface{}) *Logger {
 
 	// 创建实例 logrus.logger
 	infoLogger := logrus.New()
-	infoLogger.SetFormatter(&logrus.JSONFormatter{})
+	infoLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
 	//infoLogger.SetReportCaller(true)
 	warnLogger := logrus.New()
-	warnLogger.SetFormatter(&logrus.JSONFormatter{})
+	warnLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
 	debugLogger := logrus.New()
-	debugLogger.SetFormatter(&logrus.JSONFormatter{})
+	debugLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
 	errorLogger := logrus.New()
-	errorLogger.SetFormatter(&logrus.JSONFormatter{})
+	errorLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
 
 	// 创建实例 vdlog.logger
 	curtDate := time.Now().Format("2006010215")

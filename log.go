@@ -62,37 +62,39 @@ func RegisterLogMiddleWare() error {
 		requestTime := time.Now()                                               // 请求时间
 		requestUri := context.Request.RequestURI                                // 请求路径
 		requestId := Md5(requestUri, fmt.Sprintf("%d", requestTime.UnixNano())) // 生成 requestId
-		logger := vdlog.Clone().SetLogId(requestId)                             // 克隆 logger并设置 requestId
 
 		// 构造入参数据
 		request := map[string]interface{}{
 			"time":     requestTime,
 			"method":   context.Request.Method,
 			"query":    requestUri,
-			"header":   context.Request.Header.Clone(),
+			"header":   context.Request.Header,
 			"body":     map[string]interface{}{},
 			"clientIP": context.ClientIP(),
 		}
-
 		// 处理 body 数据
 		if context.Request.Method == http.MethodPost {
 			rawData, _ := context.GetRawData()
 			switch context.ContentType() {
+			case "application/x-www-form-urlencoded":
+				urlValue, _ := url.ParseQuery(string(rawData))
+				request["body"] = urlValue
 			case "application/json":
 				var body map[string]interface{}
 				_ = json.Unmarshal(rawData, &body)
 				request["body"] = body
-			case "application/x-www-form-urlencoded":
-				urlValue, _ := url.ParseQuery(string(rawData))
-				request["body"] = urlValue
+			case "application/xml", "text/xml":
+				request["body"] = string(rawData)
 			}
 			// body回放
 			context.Request.Body = ioutil.NopCloser(bytes.NewBuffer(rawData))
 		}
 
 		// 记录请求日志
-		logger.Info(request)          // 记录请求数据
-		context.Set("logger", logger) // 存储日志
+		logger := vdlog.Clone().SetLogId(requestId) // 克隆 logger并设置 requestId
+		logger.Info(request)                        // 记录请求数据
+		context.Set("logger", logger)               // 存储日志
+		context.Set("requestId", requestId)         // 设置 requestId
 
 		// 处理请求
 		context.Next()
