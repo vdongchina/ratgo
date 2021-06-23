@@ -10,11 +10,16 @@
 package ratgo
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/vdongchina/ratgo/utils/vdlog"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -51,12 +56,60 @@ func LoggerInit() gin.HandlerFunc {
 	}
 }
 
+// 注册日志中间件
+func RegisterLogMiddleWare() error {
+	MiddleWare.SetGlobal(func(context *gin.Context) {
+		requestTime := time.Now()                                               // 请求时间
+		requestUri := context.Request.RequestURI                                // 请求路径
+		requestId := Md5(requestUri, fmt.Sprintf("%d", requestTime.UnixNano())) // 生成 requestId
+		logger := vdlog.Clone().SetLogId(requestId)                             // 克隆 logger并设置 requestId
+
+		// 构造入参数据
+		request := map[string]interface{}{
+			"time":     requestTime,
+			"method":   context.Request.Method,
+			"query":    requestUri,
+			"header":   context.Request.Header.Clone(),
+			"body":     map[string]interface{}{},
+			"clientIP": context.ClientIP(),
+		}
+
+		// 处理 body 数据
+		if context.Request.Method == http.MethodPost {
+			rawData, _ := context.GetRawData()
+			switch context.ContentType() {
+			case "application/json":
+				var body map[string]interface{}
+				_ = json.Unmarshal(rawData, &body)
+				request["body"] = body
+			case "application/x-www-form-urlencoded":
+				urlValue, _ := url.ParseQuery(string(rawData))
+				request["body"] = urlValue
+			}
+			// body回放
+			context.Request.Body = ioutil.NopCloser(bytes.NewBuffer(rawData))
+		}
+
+		// 记录请求日志
+		logger.Info(request)          // 记录请求数据
+		context.Set("logger", logger) // 存储日志
+
+		// 处理请求
+		context.Next()
+
+		// 响应数据
+		response, _ := context.Get("response") // 响应数据
+		logger.Info(response)                  // 记录响应数据
+	})
+	return nil
+}
+
 // [info]日志写入到文件
 func LoggerToFile() gin.HandlerFunc {
 	// 文件存储
 	return func(c *gin.Context) {
-        fileName := CreateFile("info")
-        logger := Logger(fileName)
+		fileName := CreateFile("info")
+		logger := Logger(fileName)
 		//contents := c.Request.Body
 		// 开始时间
 		startTime := time.Now()
@@ -115,10 +168,9 @@ func ErrorWrite(errorInfo string) {
 	logger := Logger(fileName)
 	fmt.Println(errorInfo)
 	logger.WithFields(logrus.Fields{
-		"ErrorInfo":    errorInfo,
+		"ErrorInfo": errorInfo,
 	}).Error()
 }
-
 
 // 日志列表-记录格式
 func WriteFields(onlyStr string, key string, keyInfo string) logrus.Fields {
@@ -201,7 +253,7 @@ func CreateFile(level string) string {
 	if err := os.MkdirAll(logFilePath, 0777); err != nil {
 		fmt.Println(err.Error())
 	}
-	logFileName := now.Format("2006-01-02") + "." +level +".log"
+	logFileName := now.Format("2006-01-02") + "." + level + ".log"
 
 	//日志文件
 	fileName := path.Join(logFilePath, logFileName)

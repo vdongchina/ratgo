@@ -15,6 +15,8 @@ import (
 	"github.com/vdongchina/ratgo/ext"
 	"github.com/vdongchina/ratgo/extend"
 	"github.com/vdongchina/ratgo/extend/cache"
+	"github.com/vdongchina/ratgo/utils/types"
+	"github.com/vdongchina/ratgo/utils/vdlog"
 	"net/http"
 	"reflect"
 )
@@ -36,17 +38,30 @@ func NewWebServer() *WebServer {
 
 // 初始化
 func (ws *WebServer) Init() {
-	Config.Init() // 配置初始化
-	// 初始化数据库
+	// 配置初始化
+	Config.Init()
+
+	// 初始化 mysql
 	if Config.InitDb == true {
 		extend.Gorm.Init(Config.Get("database").ToAnyMap())
 	}
-	// 初始化redis
+
+	// 初始化 redis
 	if Config.InitRedis == true {
 		cache.Redis.Init(Config.Get("redis").ToAnyMap())
 		ext.Redis.Init(Config.Get("redis").ToAnyMap())
 	}
-	ws.gin.Use(LoggerInit()) // 日志注入
+
+	// 系统日志
+	logConfig := types.AnyMap(Config.Get("ratgo-log.main").ToAnyMap())
+	if logConfig.Get("Turn").ToString() == "on" {
+		if logConfig.Get("RootPath").ToString() == "" {
+			logConfig.Set("RootPath", Config.RuntimeLogPath)
+		}
+		_ = vdlog.Default(map[string]interface{}(logConfig)) // 更新全局 logger
+		_ = RegisterLogMiddleWare()                          // 日志中间件
+	}
+
 	// 执行用户挂载函数
 	if len(UserFuncArray) > 0 {
 		for _, function := range UserFuncArray {
@@ -170,6 +185,7 @@ func (ws *WebServer) Response(context *gin.Context, result *Result) {
 	case "String":
 		context.String(result.Status, result.Msg)
 	case "Json":
+		context.Set("response", result.Data)
 		context.JSON(result.Status, result.Data)
 	case "Html":
 		context.HTML(result.Status, result.Msg, result.Data)
