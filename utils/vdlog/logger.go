@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -22,12 +23,10 @@ import (
 	"time"
 )
 
-var DefaultLogger *Logger
-
-// 初始化
-func init() {
-	DefaultLogger = NewLogger(*defaultConfig)
-}
+var (
+	// std is the name of the standard logger in stdlib `log`
+	StdLogger = NewLogger(defaultConfig)
+)
 
 // 日志结构体
 type Logger struct {
@@ -41,10 +40,10 @@ type Logger struct {
 	DebugLogger *logrus.Logger // logrus.Logger
 }
 
-// 更新默认logger并返回
-func Default(outConfig interface{}) *Logger {
-	DefaultLogger = NewLogger(outConfig)
-	return DefaultLogger
+// 使用 StdLogger
+func Use(outConfig interface{}) *Logger {
+	StdLogger = NewLogger(outConfig)
+	return StdLogger
 }
 
 // 根据类型获取
@@ -57,13 +56,12 @@ func NewLogger(outConfig interface{}) *Logger {
 		jsonMap, _ := json.Marshal(outConfig)
 		_ = json.Unmarshal(jsonMap, &config)
 	default:
-		config = *defaultConfig
+		config = defaultConfig
 	}
 
 	// 创建实例 logrus.logger
 	infoLogger := logrus.New()
 	infoLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
-	//infoLogger.SetReportCaller(true)
 	warnLogger := logrus.New()
 	warnLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
 	debugLogger := logrus.New()
@@ -72,9 +70,8 @@ func NewLogger(outConfig interface{}) *Logger {
 	errorLogger.SetFormatter(&logrus.JSONFormatter{DisableHTMLEscape: true})
 
 	// 创建实例 vdlog.logger
-	curtDate := time.Now().Format("2006010215")
 	logger := &Logger{
-		Date:        curtDate,
+		Date:        time.Now().Format("20060102"),
 		Config:      &config,
 		lock:        sync.Mutex{},
 		InfoLogger:  infoLogger,
@@ -82,31 +79,23 @@ func NewLogger(outConfig interface{}) *Logger {
 		DebugLogger: debugLogger,
 		ErrorLogger: errorLogger,
 	}
-
-	// 设置 io.writer
-	logger.setIoWriter(logger.InfoLogger, "info", curtDate)
-	logger.setIoWriter(logger.WarnLogger, "warn", curtDate)
-	logger.setIoWriter(logger.DebugLogger, "debug", curtDate)
-	logger.setIoWriter(logger.ErrorLogger, "error", curtDate)
+	// 设置 Output
+	_ = logger.SetOutput(logger.Date)
 	return logger
 }
 
 // 克隆
 func Clone() *Logger {
 	logger := &Logger{
-		Date:        time.Now().Format("2006010215"),
-		Config:      DefaultLogger.Config,
-		InfoLogger:  DefaultLogger.InfoLogger,
-		WarnLogger:  DefaultLogger.WarnLogger,
-		ErrorLogger: DefaultLogger.ErrorLogger,
-		DebugLogger: DefaultLogger.DebugLogger,
+		Date:        time.Now().Format("20060102"),
+		Config:      StdLogger.Config,
+		InfoLogger:  StdLogger.InfoLogger,
+		WarnLogger:  StdLogger.WarnLogger,
+		ErrorLogger: StdLogger.ErrorLogger,
+		DebugLogger: StdLogger.DebugLogger,
 	}
-
-	// 设置 io.writer
-	logger.setIoWriter(logger.InfoLogger, "info", logger.Date)
-	logger.setIoWriter(logger.WarnLogger, "warn", logger.Date)
-	logger.setIoWriter(logger.DebugLogger, "debug", logger.Date)
-	logger.setIoWriter(logger.ErrorLogger, "error", logger.Date)
+	// 设置 Output
+	_ = logger.SetOutput(logger.Date)
 	return logger
 }
 
@@ -134,6 +123,36 @@ func (ls *Logger) Debug(content interface{}) {
 // 记录警告信息
 func (ls *Logger) Error(content interface{}) {
 	ls.ErrorLogger.WithFields(ls.formatMap(content)).Error()
+}
+
+// 设置 Output
+func (ls *Logger) SetOutput(date string) error {
+	ls.InfoLogger.SetOutput(ls.multiIoWriter("info", date))
+	ls.WarnLogger.SetOutput(ls.multiIoWriter("warn", date))
+	ls.DebugLogger.SetOutput(ls.multiIoWriter("debug", date))
+	ls.ErrorLogger.SetOutput(ls.multiIoWriter("error", date))
+	return nil
+}
+
+// 获取多个 io.Writer
+func (ls *Logger) multiIoWriter(level string, date string) io.Writer {
+	ioWriteSlice := make([]io.Writer, 0)
+	cfg := strings.Split(ls.Config.Layout, ",")
+	for _, v := range cfg {
+		if v == "1" {
+			ioWriteSlice = append(ioWriteSlice, os.Stdout)
+		} else if v == "2" {
+			if ioWriter, err := ls.ioWriter(level, date); err != nil {
+				fmt.Printf("create %s io.writer failed. error:%v\n", level, err)
+			} else {
+				ioWriteSlice = append(ioWriteSlice, ioWriter)
+			}
+		}
+	}
+	if len(ioWriteSlice) == 0 {
+		ioWriteSlice = append(ioWriteSlice, os.Stdout)
+	}
+	return io.MultiWriter(ioWriteSlice...)
 }
 
 // 设置 io.writer

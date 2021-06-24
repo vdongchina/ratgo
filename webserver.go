@@ -58,8 +58,8 @@ func (ws *WebServer) Init() {
 		if logConfig.Get("RootPath").ToString() == "" {
 			logConfig.Set("RootPath", Config.RuntimeLogPath)
 		}
-		_ = vdlog.Default(map[string]interface{}(logConfig)) // 更新全局 logger
-		_ = RegisterLogMiddleWare()                          // 日志中间件
+		_ = vdlog.Use(map[string]interface{}(logConfig)) // 更新全局 StdLogger
+		_ = RegisterLogMiddleWare()                      // 日志中间件
 	}
 
 	// 执行用户挂载函数
@@ -195,6 +195,19 @@ func (ws *WebServer) Response(context *gin.Context, result *Result) {
 // 异常捕获
 func (ws *WebServer) errorCatch(context *gin.Context) {
 	if r := recover(); r != nil {
-		context.String(200, Error(r).Error())
+		err := Error(r)
+		if err != nil {
+			// 异常响应
+			context.JSON(200, map[string]interface{}{
+				"code": 9999,
+				"msg":  "系统貌似出问题了~",
+				"data": err.Error(),
+			})
+			// 记录错误日志
+			logger, ok := context.Get("logger")
+			if ok {
+				logger.(*vdlog.Logger).Error(err)
+			}
+		}
 	}
 }

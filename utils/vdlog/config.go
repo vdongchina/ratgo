@@ -9,16 +9,19 @@
 // limitations under the License.
 package vdlog
 
-const (
-	Info    = 1 << iota // 日志级别: 信息
-	Debug               // 日志级别: 调试
-	Warning             // 日志级别: 警告
-	Error               // 日志级别: 错误
-)
+// 默认配置
+var defaultConfig = Config{
+	Turn:     "on",
+	Layout:   "1,2",
+	Format:   "Datetime,LogId,FilePath",
+	Ext:      "log",
+	RootPath: `/var/logs`,
+}
 
-// 配置
+// 配置结构体
 type Config struct {
 	Turn       string   // 是否开启 on:是 off:否
+	Layout     string   // 日志输出 1:打印 2:文件 (多个使用,拼接)
 	RootPath   string   // 日志文件根路径
 	Ext        string   // 日志后缀
 	Mode       []string // 模式 [Info,Warning,Debug,Error]
@@ -26,15 +29,4 @@ type Config struct {
 	ServerIP   string   // 服务IP
 	Platform   string   // 平台类型
 	Format     string   // 日志格式化
-}
-
-var defaultConfig *Config
-
-func init() {
-	defaultConfig = &Config{
-		Turn:     "on",
-		Format:   "Datetime,LogId,FilePath",
-		Ext:      "log",
-		RootPath: `/var/logs`,
-	}
 }
