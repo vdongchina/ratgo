@@ -15,7 +15,7 @@ var defaultConfig = Config{
 	Layout:   "1,2",
 	Format:   "Datetime,LogId,FilePath",
 	Ext:      "log",
-	RootPath: `/var/logs`,
+	RootPath: `/xxx/logs`,
 }
 
 // 配置结构体
