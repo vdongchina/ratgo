@@ -44,6 +44,7 @@ func (ws *WebServer) Init() {
 	// 初始化 mysql
 	if Config.InitDb == true {
 		extend.Gorm.Init(Config.Get("database").ToAnyMap())
+		ext.GormV2.Init(Config.Get("database").ToAnyMap())
 	}
 
 	// 初始化 redis
