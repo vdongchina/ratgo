@@ -44,6 +44,7 @@ type ConfigStorage struct {
 	ProjectName    string // 项目名称
 	InitDb         bool   // 是否初始化 gorm db
 	InitRedis      bool   // 是否初始化 redis
+	HandleFunc     func(config *ConfigStorage) error
 }
 
 var (
@@ -74,6 +75,7 @@ func init() {
 		ProjectName:    "lianxilog",
 		InitDb:         true,
 		InitRedis:      true,
+		HandleFunc:     nil,
 	}
 }
 
@@ -158,6 +160,11 @@ func (cs *ConfigStorage) Init(outAnyMap ...map[string]interface{}) {
 			//do nothing here
 		}
 	}
+}
+
+// 配置处理方法
+func (cs *ConfigStorage) Handle(fn func(config *ConfigStorage) error) {
+	cs.HandleFunc = fn
 }
 
 // 使用解析器解析文件至map类型配置数据

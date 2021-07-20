@@ -39,18 +39,32 @@ func NewWebServer() *WebServer {
 // 初始化
 func (ws *WebServer) Init() {
 	// 配置初始化
+	fmt.Printf("[WebServer初始化]系统配置初始化...\r\n")
 	Config.Init()
+
+	// 配置处理
+	if Config.HandleFunc != nil {
+		fmt.Printf("[WebServer初始化]系统配置经过应用处理...\r\n")
+		err := Config.HandleFunc(Config)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	// 初始化 mysql
 	if Config.InitDb == true {
-		extend.Gorm.Init(Config.Get("database").ToAnyMap())
-		ext.GormV2.Init(Config.Get("database").ToAnyMap())
+		dbConfig := Config.Get("database").ToAnyMap()
+		fmt.Printf("[WebServer初始化]数据库对象 config: %v \r\n", dbConfig)
+		extend.Gorm.Init(dbConfig)
+		ext.GormV2.Init(dbConfig)
 	}
 
 	// 初始化 redis
 	if Config.InitRedis == true {
-		cache.Redis.Init(Config.Get("redis").ToAnyMap())
-		ext.Redis.Init(Config.Get("redis").ToAnyMap())
+		redisConfig := Config.Get("redis").ToAnyMap()
+		fmt.Printf("[WebServer初始化]redis对象 config: %v \r\n", redisConfig)
+		cache.Redis.Init(redisConfig)
+		ext.Redis.Init(redisConfig)
 	}
 
 	// 系统日志
