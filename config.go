@@ -52,7 +52,7 @@ var (
 	Config *ConfigStorage
 
 	// configProvider is the provider for the config, default is ini
-	configProvider = "ini"
+	configProvider = "yml"
 )
 
 // 初始化 ratgo配置
@@ -175,6 +175,8 @@ func (cs *ConfigStorage) ParserToAnyMap(configProvider string, filePath string) 
 		configParser = &config.IniParser{}
 	case "json":
 		configParser = &config.JsonParser{}
+	case "yml":
+		configParser = &config.YamlParser{}
 	default:
 		configParser = &config.IniParser{}
 	}
