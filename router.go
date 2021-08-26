@@ -9,7 +9,10 @@
 // limitations under the License.
 package ratgo
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // 简易模式路由容器
 type GeneralMap map[string]ControllerInterface
@@ -41,6 +44,23 @@ func init() {
 
 // 设置简易路由
 func (rs *RouterStorage) General(group string, controllers GeneralMap) {
+	// 修改路由模式
+	if rs.Mode != "General" {
+		rs.Mode = "General"
+	}
+	// 注册路由
+	for key, value := range controllers {
+		key = strings.Trim(key, "")
+		key = strings.Trim(key, "/")
+		pathSlice := strings.Split(key, "/")
+		generalKey := fmt.Sprintf("/%s/%s", group, strings.Join(pathSlice, "/"))
+		rs.generalMap[generalKey] = value   // 存储控制器模板
+		rs.SetGeneralPath(group, pathSlice) // 存储路由规则
+	}
+}
+
+// 设置简易路由
+func (rs *RouterStorage) GeneralOld(group string, controllers GeneralMap) {
 	if rs.Mode != "General" {
 		rs.Mode = "General"
 	}
@@ -58,10 +78,40 @@ func (rs *RouterStorage) General(group string, controllers GeneralMap) {
 
 // 获取简易路由对应控制器
 func (rs *RouterStorage) GetGeneral(path string) ControllerInterface {
+	path = strings.TrimSpace(path)
 	if controller, ok := rs.generalMap[path]; ok {
 		return controller
 	}
 	return nil
+}
+
+// 简易模式 - 设置路径
+func (rs *RouterStorage) SetGeneralPath(group string, pathSlice []string) {
+	// 拼接路由规则字符串
+	ruleSlice := []string{group}
+	for i := 1; i <= len(pathSlice); i++ {
+		ruleSlice = append(ruleSlice, fmt.Sprintf(":param_%d", i))
+	}
+	ruleString := fmt.Sprintf("/%s", strings.Join(ruleSlice, "/"))
+
+	// 读取路由规则map
+	if pathRule, ok := rs.generalPath[group]; !ok {
+		rs.generalPath[group] = []string{ruleString}
+	} else { // 验证路由规则是否存在
+		ok := func() bool {
+			isExist := false
+			for _, v := range pathRule {
+				if v == ruleString {
+					isExist = true
+					break
+				}
+			}
+			return isExist
+		}()
+		if !ok {
+			rs.generalPath[group] = append(pathRule, ruleString)
+		}
+	}
 }
 
 // 获取简易路由 relativePath数组
