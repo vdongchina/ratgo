@@ -8,8 +8,10 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -81,6 +83,25 @@ func (ds *DbStorage) gormDB(identification string) (db *gorm.DB, err error) {
 
 	// gorm 配置
 	gormConfig := &gorm.Config{}
+
+	// NamingStrategy来更改命名约定
+	namingStrategyConfig := types.AnyMap(config.Get("NamingStrategy").ToAnyMap())
+	if len(namingStrategyConfig) > 0 {
+		namingStrategy := schema.NamingStrategy{}
+		if tablePrefix := namingStrategyConfig.Get("TablePrefix").ToString(); tablePrefix != "" {
+			namingStrategy.TablePrefix = tablePrefix
+		}
+		if _, ok := namingStrategyConfig["SingularTable"]; ok {
+			namingStrategy.SingularTable = namingStrategyConfig.Get("SingularTable").ToBool()
+		}
+		if _, ok := namingStrategyConfig["NameReplacer"]; ok {
+			nameReplacer := namingStrategyConfig.Get("NameReplacer").ToStringSlice()
+			if len(nameReplacer) == 2 {
+				namingStrategy.NameReplacer = strings.NewReplacer(nameReplacer[0], nameReplacer[1])
+			}
+		}
+		gormConfig.NamingStrategy = namingStrategy
+	}
 
 	// 日志输出
 	logConfig := types.AnyMap(config.Get("Log").ToAnyMap())
